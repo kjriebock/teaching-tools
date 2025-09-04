@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predator-Prey Model Learning Interface</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+             // Add new data points at current index
+            preyData[currentDataIndex] = currentX;
+            predatorData[currentDataIndex] = currentY;
+            producerData[currentDataIndex] = getProducerPopulation(currentTime);  // Add producer point progressively
+            
+            // Update chart (no need to change labels, only data)
+            timeSeriesChart.update('none'); // Update without animation
+            
+            // Update population bars only if not completed
+            if (!simulationCompleted) {
+                updatePopulationBars(getProducerPopulation(currentTime), currentX, currentY);
+            }ax-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .food-chain {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+        
+        .species-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .species-label {
+            font-weight: bold;
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .species-icon {
+            font-size: 30px;
+            margin-bottom: 5px;
+            height: 35px;
+        }
+        
+        .population-bar {
+            width: 120px;
+            height: 80px;
+            border: 3px solid #333;
+            border-radius: 4px;
+            position: relative;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .population-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            transition: height 0.3s ease;
+            border-radius: 1px;
+        }
+        
+        .producer-fill {
+            background: linear-gradient(to top, #4CAF50, #81C784);
+        }
+        
+        .prey-fill {
+            background: linear-gradient(to top, #2196F3, #64B5F6);
+        }
+        
+        .predator-fill {
+            background: linear-gradient(to top, #f44336, #EF5350);
+        }
+        
+        .arrow {
+            font-size: 30px;
+            color: #666;
+            margin: 0 10px;
+        }
+        
+        .population-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+            text-shadow: 1px 1px 1px rgba(255,255,255,0.8);
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .info-panel {
+            background: #e8f4fd;
+            border-left: 4px solid #2196F3;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .info-panel h3 {
+            margin-top: 0;
+            color: #1976D2;
+        }
+        
+        .buttons {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Predator-Prey Model Explorer</h1>
+        </div>
+        
+        <div class="content">
+            <!-- Food Chain Visualization -->
+            <div class="food-chain">
+                <div class="species-container">
+                    <div class="species-label">A</div>
+                    <div class="species-icon">🌱</div>
+                    <div class="population-bar">
+                        <div class="population-fill producer-fill" id="producerBar"></div>
+                        <div class="population-value" id="producerValue">160</div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 14px; color: #666;">Producer</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="species-container">
+                    <div class="species-label">B</div>
+                    <div class="species-icon">🐰</div>
+                    <div class="population-bar">
+                        <div class="population-fill prey-fill" id="preyBar"></div>
+                        <div class="population-value" id="preyValue">40</div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 14px; color: #666;">Prey</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="species-container">
+                    <div class="species-label">C</div>
+                    <div class="species-icon">🦉</div>
+                    <div class="population-bar">
+                        <div class="population-fill predator-fill" id="predatorBar"></div>
+                        <div class="population-value" id="predatorValue">20</div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 14px; color: #666;">Predator</div>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button class="btn" onclick="toggleSimulation()">Start</button>
+                <button class="btn" onclick="resetToDefaults()">Reset</button>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="timeSeriesChart"></canvas>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FF9800;"></div>
+                    <span>Producer Population</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #4CAF50;"></div>
+                    <span>Prey Population</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #f44336;"></div>
+                    <span>Predator Population</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Multi-Species Model Simulation
+        let timeSeriesChart;
+        let animationId;
+        let isRunning = false;
+        let simulationCompleted = false;
+        
+        // Fixed model parameters for proper oscillations (adjusted for exactly 3 complete cycles)
+        const preyGrowthRate = 1.8;      // Natural prey growth (increased for faster cycles)
+        const predationRate = 0.09;      // Rate at which predators consume prey (increased for faster cycles)
+        const predatorEfficiency = 0.108; // How efficiently predators convert prey to offspring (increased)
+        const predatorDeathRate = 4.32;  // Natural predator death rate (increased for faster cycles)
+        
+        // Initial conditions (fixed)
+        let x0 = 60;  // Initial Prey population (higher equilibrium)
+        let y0 = 15;  // Initial Predator population (lower equilibrium ~20)
+        
+        // Current simulation state
+        let currentTime = 0;
+        let currentX = 60;
+        let currentY = 15;
+        let currentDataIndex = 0;  // Track position in data arrays
+        
+        // Data arrays for the chart
+        let timeData = [];
+        let preyData = [];
+        let predatorData = [];
+        let producerData = [];  // Static horizontal line
+        
+        // Producer population (static at twice the prey peak)
+        // Producer population parameters
+        const producerAmplitude = 30;    // Oscillation range (±30)
+        const producerMean = 140;         // Base level (above prey peak ~80)
+        const producerPhaseShift = -0.8;  // Phase shift to peak before prey
+        
+        // Function to calculate producer population at time t
+        function getProducerPopulation(t) {
+            // Producer oscillates and peaks before prey (phase shift)
+            // Frequency matches prey/predator system but leads it
+            const frequency = Math.sqrt(preyGrowthRate * predatorDeathRate);
+            return producerMean + producerAmplitude * Math.cos(frequency * t + producerPhaseShift);
+        }
+        
+        // Simulation parameters
+        const dt = 0.1;  // Time step for animation (smaller for smoother faster oscillations)
+        const tMax = 100;  // Maximum time (fixed X-axis limit)
+        const animationSpeed = 60; // milliseconds between updates (faster for quicker progression)
+        
+        // Simplified Lotka-Volterra equations with proper equilibrium and phase lag
+        function dxdt(x, y) {
+            // Prey equation: dx/dt = r*x - a*x*y
+            // Prey grows naturally but is consumed by predators
+            return preyGrowthRate * x - predationRate * x * y;
+        }
+        
+        function dydt(x, y) {
+            // Predator equation: dy/dt = b*x*y - d*y
+            // Predator growth depends on prey consumption minus natural death
+            return predatorEfficiency * x * y - predatorDeathRate * y;
+        }
+        
+        // Reset simulation data
+        function resetSimulation() {
+            currentTime = 0;
+            currentX = x0;
+            currentY = y0;
+            
+            // Pre-populate time axis with all values from 0 to 100
+            timeData = [];
+            for (let t = 0; t <= tMax; t += dt) {
+                timeData.push(t);
+            }
+            console.log(`timeData initialized: length=${timeData.length}, first=${timeData[0]}, last=${timeData[timeData.length-1]}`);
+            
+            console.log(`timeData initialized: length=${timeData.length}, first=${timeData[0]}, last=${timeData[timeData.length-1]}`);
+            
+            // Initialize data arrays with null values (will be filled during simulation)
+            preyData = new Array(timeData.length).fill(null);
+            predatorData = new Array(timeData.length).fill(null);
+            producerData = new Array(timeData.length).fill(null);  // Will be filled progressively during simulation
+            
+            // Set initial values
+            preyData[0] = currentX;
+            predatorData[0] = currentY;
+            producerData[0] = getProducerPopulation(0);  // Start with first point
+            
+            // Track current index for data filling
+            currentDataIndex = 0;
+        }
+        
+        // Create time series chart
+        function createTimeSeriesChart() {
+            const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+            
+            if (timeSeriesChart) {
+                timeSeriesChart.destroy();
+            }
+            
+            timeSeriesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timeData,
+                    datasets: [{
+                        label: 'Prey Population',
+                        data: preyData,
+                        borderColor: '#2196F3',
+                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }, {
+                        label: 'Predator Population',
+                        data: predatorData,
+                        borderColor: '#f44336',
+                        backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }, {
+                        label: 'Producer Population',
+                        data: producerData,
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false, // Disable chart animations for smooth real-time updates
+                    plugins: {
+                        title: {
+                            display: false
+                        },
+                        legend: {
+                            display: false // We have custom legend
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return 'Month ' + Math.round(context[0].parsed.x);
+                                },
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + Math.round(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time (months)'
+                            },
+                            grid: {
+                                display: true,
+                                color: '#d0d0d0'
+                            },
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                callback: function(value) {
+                                    return value;
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Population Size'
+                            },
+                            min: 0,
+                            max: 180,
+                            ticks: {
+                                stepSize: 30
+                            },
+                            grid: {
+                                display: true,
+                                color: '#d0d0d0'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+        
+        // Animation step function
+        function animateStep() {
+            if (!isRunning || simulationCompleted) {
+                return;
+            }
+            
+            // Absolute hard stop at exactly 100 time units
+            if (currentTime >= 100) {
+                simulationCompleted = true;
+                isRunning = false;
+                document.querySelector('.btn').textContent = 'Reset';
+                if (animationId) {
+                    clearTimeout(animationId);
+                    animationId = null;
+                }
+                return;
+            }
+            
+            // Update populations using Lotka-Volterra equations
+            const dx = dxdt(currentX, currentY) * dt;
+            const dy = dydt(currentX, currentY) * dt;
+            
+            currentX = Math.max(10, Math.min(90, currentX + dx));  // Keep within bounds
+            currentY = Math.max(5, Math.min(60, currentY + dy));   // Keep within bounds (adjusted for new scale)
+            currentTime += dt;
+            currentDataIndex++;
+            
+            // Hard stop at 100 months - no exceptions
+            if (currentTime >= 100) {
+                // Final update
+                preyData[currentDataIndex] = currentX;
+                predatorData[currentDataIndex] = currentY;
+                producerData[currentDataIndex] = getProducerPopulation(currentTime);
+                timeSeriesChart.update('none');
+                
+                // COMPLETE SHUTDOWN
+                simulationCompleted = true;
+                isRunning = false;
+                clearTimeout(animationId);
+                animationId = null;
+                document.querySelector('.btn').textContent = 'Reset';
+                
+                // Override the step function to prevent any further calls
+                window.animateStep = function() { return; };
+                return;
+            }
+            if (currentDataIndex >= timeData.length - 1 || currentTime >= 99.95) {
+                // Add final data point
+                preyData[currentDataIndex] = currentX;
+                predatorData[currentDataIndex] = currentY;
+                producerData[currentDataIndex] = getProducerPopulation(currentTime);
+                timeSeriesChart.update('none');
+                updatePopulationBars(getProducerPopulation(currentTime), currentX, currentY);
+                simulationCompleted = true;
+                stopSimulation();
+                document.querySelector('.btn').textContent = 'Reset';
+                // Clear any pending animation immediately
+                if (animationId) {
+                    clearTimeout(animationId);
+                    animationId = null;
+                }
+                return;
+            }
+            
+            // Add new data points at current index
+            preyData[currentDataIndex] = currentX;
+            predatorData[currentDataIndex] = currentY;
+            producerData[currentDataIndex] = producerPopulation;  // Add producer point progressively
+            
+            // Update chart (no need to change labels, only data)
+            timeSeriesChart.update('none'); // Update without animation
+            
+            // Update population bars only if simulation is not completed
+            if (!simulationCompleted) {
+                updatePopulationBars(producerPopulation, currentX, currentY);
+            }
+            
+            // Only schedule next frame if still running and not at limit
+            if (isRunning && currentTime < 99.95 && !simulationCompleted) {
+                animationId = setTimeout(animateStep, animationSpeed);
+            }
+        }
+        
+        // Start simulation
+        function startSimulation() {
+            if (isRunning) return;
+            
+            // Don't start if simulation is completed - user must reset first
+            if (simulationCompleted) {
+                return;
+            }
+            
+            // Don't start if already at the end
+            if (currentDataIndex >= timeData.length - 1) {
+                resetToDefaults();
+                return;
+            }
+            
+            isRunning = true;
+            document.querySelector('.btn').textContent = 'Stop';
+            animateStep();
+        }
+        
+        // Stop simulation
+        function stopSimulation() {
+            isRunning = false;
+            document.querySelector('.btn').textContent = 'Start';
+            if (animationId) {
+                clearTimeout(animationId);
+                animationId = null;
+            }
+        }
+        
+        // Toggle simulation (Start/Stop functionality)
+        function toggleSimulation() {
+            if (simulationCompleted) {
+                // If simulation is completed, reset instead of starting
+                resetToDefaults();
+            } else if (isRunning) {
+                stopSimulation();
+            } else {
+                startSimulation();
+            }
+        }
+        
+        // Update simulation parameters (removed - now using fixed parameters)
+        
+        // Reset to default values
+        // Update population visualization bars
+        function updatePopulationBars(producer, prey, predator) {
+            // Don't update bars if simulation is completed
+            if (simulationCompleted) {
+                return;
+            }
+            
+            const maxPopulation = 180; // Maximum for scaling (matches chart Y-axis)
+            
+            // Calculate fill percentages
+            const producerPercent = (producer / maxPopulation) * 100;
+            const preyPercent = (prey / maxPopulation) * 100;
+            const predatorPercent = (predator / maxPopulation) * 100;
+            
+            // Update bar heights
+            document.getElementById('producerBar').style.height = `${producerPercent}%`;
+            document.getElementById('preyBar').style.height = `${preyPercent}%`;
+            document.getElementById('predatorBar').style.height = `${predatorPercent}%`;
+            
+            // Update population values (rounded to 1 decimal place)
+            document.getElementById('producerValue').textContent = Math.round(producer * 10) / 10;
+            document.getElementById('preyValue').textContent = Math.round(prey * 10) / 10;
+            document.getElementById('predatorValue').textContent = Math.round(predator * 10) / 10;
+        }
+
+        function resetToDefaults() {
+            // Stop simulation if running
+            stopSimulation();
+            
+            // Reset simulation state
+            currentTime = 0;
+            currentX = 60;
+            currentY = 15;
+            currentDataIndex = 0;
+            simulationCompleted = false;
+            
+            resetSimulation();
+            createTimeSeriesChart();
+            
+            // Reset population bars to initial values
+            updatePopulationBars(160, 60, 15);
+        }
+        
+        // Initialize the simulation when page loads
+        window.addEventListener('load', function() {
+            resetSimulation();
+            createTimeSeriesChart();
+            updatePopulationBars(160, 60, 15);
+        });
+    </script>
+</body>
+</html>
