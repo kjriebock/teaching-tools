@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stable States of Earth's Climate System</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0ea5e9 0%, #22c55e 35%, #f97316 70%, #ef4444 100%); margin: 0; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        .container { background: white; border-radius: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); padding: 30px; max-width: 1000px; width: 100%; }
+        h1 { text-align: center; color: #333; margin-bottom: 10px; font-size: 2.5em; }
+        .subtitle { text-align: center; color: #334155; margin-bottom: 30px; font-style: italic; }
+        .canvas-container { position: relative; margin: 20px 0; border: 2px solid #e5e7eb; border-radius: 10px; background: #fbfbfb;  padding-left: 56px; }
+        canvas { display: block; border-radius: 8px; }
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; padding: 20px; background: #f5f5f5; border-radius: 10px; }
+        .control-group { display: flex; flex-direction: column; align-items: center; }
+        .control-group label { font-weight: bold; margin-bottom: 10px; color: #333; }
+        .disturbance-btn { background: linear-gradient(45deg, #059669, #10b981); color: white; border: none; padding: 15px 30px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4); }
+        .disturbance-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6); }
+        .disturbance-btn:active { transform: translateY(0); }
+        .slider { width: 150px; height: 6px; border-radius: 3px; background: #ddd; outline: none; -webkit-appearance: none; margin: 10px 0; }
+        .slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #0ea5e9; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+        .slider::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #0ea5e9; cursor: pointer; border: none; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+        .value-display { font-weight: bold; color: #0ea5e9; margin-top: 5px; }
+        .reset-btn { background: linear-gradient(45deg, #0284c7, #22d3ee); color: white; border: none; padding: 12px 25px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4); }
+        .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(78, 205, 196, 0.6); }
+        .info-panel { background: #e8f4f8; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 0 10px 10px 0; }
+        .info-panel h3 { margin-top: 0; color: #333; }
+        .state-indicator { position: absolute; right: 20px; top: 20px; padding: 10px 15px; border-radius: 20px; font-weight: bold; color: white; transition: all 0.3s ease; }
+        .state-original { background: #4CAF50; }
+        .state-disturbed { background: #FF9800; }
+        .state-alternative { background: #F44336; }
+
+        .y-axis-label {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%) rotate(180deg);
+            writing-mode: vertical-rl;
+            transform-origin: center;
+            text-orientation: mixed;
+            color: #333;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.1;
+            pointer-events: none;
+        
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stable States of Earth's Climate System</h1>
+        <p class="subtitle">Explore how systems respond to disturbances and tipping points</p>
+
+        <div class="canvas-container">
+            <div class="y-axis-label">System State<br>Change in Earth's Global Temperature</div>
+            <canvas id="simulationCanvas" width="900" height="400"></canvas>
+            <div id="stateIndicator" class="state-indicator state-original">Original Stable State</div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <button id="disturbanceBtn" class="disturbance-btn">Apply Disturbance</button>
+            </div>
+            <div class="control-group">
+                <label for="modeSelect">Visualization Mode</label>
+                <select id="modeSelect" style="padding:8px 10px; border-radius:8px; border:1px solid #ddd; background:#fff; min-width:200px;">
+                    <option value="line" selected>Line (Time Series)</option>
+                    <option value="hill">Ball &amp; Hill</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="multiSlider">Multiple Disturbances</label>
+                <input type="range" id="multiSlider" class="slider" min="1" max="10" value="1" />
+                <div class="value-display" id="multiValue">1</div>
+            </div>
+            <div class="control-group">
+                <label for="intensitySlider">Disturbance Intensity</label>
+                <input type="range" id="intensitySlider" class="slider" min="1" max="10" value="1" />
+                <div class="value-display" id="intensityValue">1</div>
+            </div>
+            <div class="control-group">
+                <label for="complexitySlider">System Complexity</label>
+                <input type="range" id="complexitySlider" class="slider" min="0" max="100" value="50" />
+                <div class="value-display" id="complexityValue">Moderate</div>
+                <div style="display:flex; width:150px; justify-content:space-between; font-size:12px; color:#666;">
+                    <span>Less Complex</span><span>More Complex</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <button id="resetBtn" class="reset-btn">Reset Simulation</button>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>How to Use:</h3>
+            <ul>
+                <li><strong>Disturbance:</strong> Click to apply disturbances; they accumulate.</li>
+                <li><strong>Multiple Disturbances:</strong> Each click schedules that many distinct disturbance events.</li>
+                <li><strong>Intensity:</strong> Higher values create stronger disturbances.</li>
+                <li><strong>System Complexity:</strong> Left increases base amplitude (easier to tip), right decreases it (harder to tip).</li>
+                <li><strong>Tipping Point:</strong> Crossing the red dashed line triggers a gradual shift to the alternative state.</li>
+                <li><strong>Reset:</strong> Return to the original stable state.</li>
+            </ul>
+        </div>
+
+        <div class="climate-legend" style="margin-top:12px; font-size:13px; color:#374151;">
+            <strong>Legend:</strong>
+            <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:6px; align-items:center;">
+                <span style="display:inline-flex; align-items:center; gap:6px;"><span style="display:inline-block;width:16px;height:3px;background:#4CAF50;"></span>Original State</span>
+                <span style="display:inline-flex; align-items:center; gap:6px;"><span style="display:inline-block;width:16px;height:3px;background:#FF5722;"></span>Tipping Point</span>
+                <span style="display:inline-flex; align-items:center; gap:6px;"><span style="display:inline-block;width:16px;height:3px;background:#F44336;"></span>Alternative State</span>
+                <span style="display:inline-flex; align-items:center; gap:6px;">Endpoint: 🌍 <span style="opacity:.85">(🔥 in Alternative Stable State)</span></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class StableEquilibriumSimulation {
+            constructor() {
+                this.canvas = document.getElementById('simulationCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.stateIndicator = document.getElementById('stateIndicator');
+
+                // Simulation parameters (positions in canvas Y)
+                this.time = 0;
+                this.currentState = 'original'; // 'original' | 'disturbed' | 'alternative'
+                this.originalEquilibrium = 300;     // bottom
+                this.tippingPoint = 200;            // middle
+                this.alternativeEquilibrium = 100;  // top
+                this.currentEquilibrium = this.originalEquilibrium;
+
+                // Transition
+                this.isTransitioning = false;
+                this.transitionRate = 0.5; // pixels per frame toward alternative
+
+                // Wave parameters (slow + gentle)
+                this.amplitude = 8;
+                this.frequency = 0.020; // radians per frame
+                this.phase = 0;
+
+                // Disturbances (queue of distinct events)
+                this.intensity = 1;            // slider 1..10
+                this.numDisturbances = 1;      // slider 1..10
+                this.disturbanceDecay = 0.98;  // multiplicative per frame
+                this.eventExpDecay = 0.005;    // exponential decay factor
+                this.eventFreqMultiplier = 3;  // each event oscillates faster
+                this.disturbanceSpacing = 20;  // frames between events in a click
+                this.disturbanceQueue = [];    // { amplitude, startTime, phase, active }
+
+                // Mode + Ball & Hill parameters
+                this.mode = 'line';
+                this.ballX = -0.7;   // normalized [-1,1]
+                this.ballV = 0;
+                this.hillDamping = 0.94; // retain momentum a bit longer
+                this.leftMinNorm = -0.7071;
+                this.rightMinNorm = 0.7071;
+                this.hillBarrier = 0.35; // updated by complexity
+                  this.kickDuration = 12;   // frames per increment push
+                  this.pauseFrames = 14;    // longer pause between increments for visibility
+                  this.hillKickGain = 2.5; // velocity impulse gain per normalized dx increment
+// how strongly bias influences velocity per frame
+
+                this.baselineShift = 0;
+                   // cumulative discrete steps toward tipping (negative Y)
+                this.stepDecay = 0.995; // relaxation factor back to equilibrium per frame
+
+                // Data buffer (left -> mid canvas)
+                this.dataPoints = [];
+                this.maxDataPoints = Math.floor((this.canvas.width / 2) / 2); // ~225 for 900px wide
+
+                this.setupEventListeners();
+                this.animate();
+            }
+
+            setupEventListeners() {
+                document.getElementById('disturbanceBtn').addEventListener('click', () => this.applyDisturbance());
+
+                const modeSelect = document.getElementById('modeSelect');
+                  if (modeSelect) modeSelect.addEventListener('change', (e) => {
+                    this.mode = e.target.value === 'hill' ? 'hill' : 'line';
+                    if (this.mode === 'line') {
+                        // clear line buffer to avoid stale points
+                        this.dataPoints = [];
+                    } else {
+                        // initialize ball position based on current state
+                        this.ballX = (this.currentState === 'alternative') ? this.rightMinNorm : this.leftMinNorm;
+                        this.ballV = 0;
+                    }
+                });
+
+                const multiSlider = document.getElementById('multiSlider');
+                const multiValue = document.getElementById('multiValue');
+                multiSlider.addEventListener('input', (e) => {
+                    this.numDisturbances = parseInt(e.target.value, 10) || 1;
+                    multiValue.textContent = String(this.numDisturbances);
+                });
+
+                const intensitySlider = document.getElementById('intensitySlider');
+                const intensityValue = document.getElementById('intensityValue');
+                intensitySlider.addEventListener('input', (e) => {
+                    this.intensity = parseInt(e.target.value, 10) || 1;
+                    intensityValue.textContent = String(this.intensity);
+                });
+
+                const complexitySlider = document.getElementById('complexitySlider');
+                const complexityValue = document.getElementById('complexityValue');
+                const updateComplexity = () => {
+                    let v = parseInt(complexitySlider.value, 10);
+                    if (Number.isNaN(v)) v = 50;
+                    const minAmp = 2;
+                    const maxAmp = 16;
+                    this.amplitude = maxAmp - (v / 100) * (maxAmp - minAmp);
+                    complexityValue.textContent = v <= 33 ? 'Less Complex' : (v >= 67 ? 'More Complex' : 'Moderate');
+                    // Hill barrier increases with complexity (harder to tip)
+                    const barrierMin = 0.20, barrierMax = 0.85;
+                      const t = Math.max(0, Math.min(1, v / 100));
+                      const expo = Math.pow(t, 1.6); // accelerate depth for 'More Complex'
+                      this.hillBarrier = barrierMin + expo * (barrierMax - barrierMin);
+                };
+                complexitySlider.addEventListener('input', updateComplexity);
+                updateComplexity();
+
+                
+                document.getElementById('resetBtn').addEventListener('click', () => this.reset());
+
+            }
+
+            applyDisturbance() {
+                const now = this.time;
+                if (this.mode === "hill") {
+                    // Schedule sequential multi-frame velocity kicks (rolling), with short pauses
+                    let lastEnd = now;
+                    if (this.disturbanceQueue.length) {
+                        lastEnd = Math.max(...this.disturbanceQueue.map(e => (e.startTime || 0) + (e.framesRemaining || 0)));
+                    }
+                    const eventSpacing = this.kickDuration + this.pauseFrames;
+                    const stepPixels = Math.max(1, Math.round(this.intensity * 4));
+                    const dx = stepPixels / (this.canvas.width / 2); // normalized
+                    const dvTotal = dx * this.hillKickGain;
+                    const dvPerFrame = dvTotal / this.kickDuration;
+                    const baseStart = Math.max(now, lastEnd + this.pauseFrames);
+                    for (let i = 0; i < this.numDisturbances; i++) {
+                        const start = baseStart + i * eventSpacing;
+                        this.disturbanceQueue.push({
+                            type: 'kick',
+                            startTime: start,
+                            framesRemaining: this.kickDuration,
+                            dvPerFrame: dvPerFrame,
+                        });
+                    }
+                } else {
+                    // Line mode: keep discrete step baseline shifts with spacing
+                    for (let i = 0; i < this.numDisturbances; i++) {
+                        const start = now + i * this.disturbanceSpacing;
+                        this.disturbanceQueue.push({
+                            type: 'step',
+                            startTime: start,
+                            applied: false,
+                            step: Math.max(1, Math.round(this.intensity * 4)),
+                        });
+                    }
+                }
+                this.updateState('disturbed');
+            }
+
+            reset() {
+                this.time = 0;
+                this.currentState = 'original';
+                this.currentEquilibrium = this.originalEquilibrium;
+                this.isTransitioning = false;
+                this.disturbanceQueue = [];
+                this.dataPoints = [];
+                this.baselineShift = 0;
+                  this.ballX = this.leftMinNorm;
+                  this.ballV = 0;
+                  
+                this.updateState('original');
+            }
+
+            updateState(newState) {
+                this.currentState = newState;
+                const indicator = this.stateIndicator;
+                switch (newState) {
+                    case 'original':
+                        indicator.textContent = 'Original Stable State (±0 ˚C)';
+                        indicator.className = 'state-indicator state-original';
+                        break;
+                    case 'disturbed':
+                        indicator.textContent = 'System Disturbed';
+                        indicator.className = 'state-indicator state-disturbed';
+                        break;
+                    case 'alternative':
+                        indicator.textContent = this.isTransitioning ? 'Transitioning to Alternative State' : 'Alternative Stable State (+7.5 ˚C)';
+                        indicator.className = 'state-indicator state-alternative';
+                        break;
+                }
+            }
+
+            calculateWaveValue() {
+                // Base sinusoid around current equilibrium
+                const baseWave = this.amplitude * Math.sin(this.frequency * this.time + this.phase);
+
+                // Apply discrete step disturbances cumulatively at their start times (line mode only)
+                if (this.mode === "line") {
+                let disturbanceWave = 0; // deprecated (kept for clarity)
+                if (this.disturbanceQueue.length) {
+                    for (let i = this.disturbanceQueue.length - 1; i >= 0; i--) {
+                        const evt = this.disturbanceQueue[i];
+                        if (evt.type === 'step' && !evt.applied && this.time >= evt.startTime) {
+                            // Upwards on canvas is decreasing Y
+                            this.baselineShift -= evt.step;
+                            evt.applied = true;
+                        }
+                        if (evt.type === 'step' && evt.applied) {
+                            this.disturbanceQueue.splice(i, 1);
+                        }
+                    }
+                }
+
+                // Gentle relaxation back to current equilibrium when not transitioning
+                if (!this.isTransitioning) {
+                    this.baselineShift *= this.stepDecay;
+                    if (Math.abs(this.baselineShift) < 0.05) this.baselineShift = 0;
+                  
+                }
+
+
+                }
+
+                // Update state label based on current conditions (not queue length)
+                if (!this.isTransitioning) {
+                    if (this.currentEquilibrium === this.alternativeEquilibrium) {
+                        this.updateState('alternative');
+                    } else if (this.baselineShift !== 0) {
+                        this.updateState('disturbed');
+                    } else {
+                        this.updateState('original');
+                    }
+                }
+
+                let totalValue = this.currentEquilibrium + (this.mode === "line" ? this.baselineShift : 0) + baseWave;
+
+                // Start transition once we cross the tipping point while at original equilibrium
+                if (totalValue <= this.tippingPoint && this.currentEquilibrium === this.originalEquilibrium && !this.isTransitioning) {
+                    // Latch at the crossing moment: prevent a brief return to original baseline
+                    // Clamp currentEquilibrium up to the tipping line so the rendered point doesn't dip back
+                    this.currentEquilibrium = Math.min(this.currentEquilibrium, this.tippingPoint);
+                    // Also clamp the instantaneous totalValue to not go below tipping line on the frame of crossing
+                    totalValue = Math.min(totalValue, this.tippingPoint);
+
+                    this.isTransitioning = true;
+                    this.updateState('alternative');
+                    this.disturbanceQueue = []; // clear remaining disturbances
+                    this.baselineShift = 0;
+                   // absorb steps into transition baseline
+                }
+
+                // Gradual transition toward the alternative state
+                if (this.isTransitioning && this.currentEquilibrium > this.alternativeEquilibrium) {
+                    this.currentEquilibrium -= this.transitionRate;
+                    if (this.currentEquilibrium <= this.alternativeEquilibrium) {
+                        this.currentEquilibrium = this.alternativeEquilibrium;
+                        this.isTransitioning = false;
+                        this.updateState('alternative');
+                    }
+                }
+
+                return totalValue;
+            }
+
+
+            // --- Ball & Hill helpers ---
+            potentialU(normX) {
+                // Double-well: U = h*(x^4 - x^2); crest at 0 (U=0), wells negative
+                return this.hillBarrier * (normX*normX*normX*normX - normX*normX);
+            }
+            dUdx(normX) {
+                // dU/dx = h*(4x^3 - 2x)
+                return this.hillBarrier * (4*normX*normX*normX - 2*normX);
+            }
+            normToCanvasX(nx) {
+                return (nx + 1) * 0.5 * this.canvas.width;
+            }
+            canvasToNormX(px) {
+                return (px / this.canvas.width) * 2 - 1;
+            }
+
+            calculateHill() {
+                // Apply queued step events as rightward nudges in X
+                  // Apply queued events: multi-frame velocity kicks (and legacy one-shot steps)
+                  // Apply queued events: multi-frame velocity kicks (and legacy one-shot steps)
+                  let appliedKickThisFrame = false;
+                  let futureKickPending = false;
+                  if (this.disturbanceQueue.length) {
+                      for (let i = this.disturbanceQueue.length - 1; i >= 0; i--) {
+                          const evt = this.disturbanceQueue[i];
+                          if (evt.type === 'kick') {
+                              if (this.time >= evt.startTime) {
+                                  this.ballV += evt.dvPerFrame;
+                                  evt.framesRemaining = (evt.framesRemaining || 0) - 1;
+                                  appliedKickThisFrame = true;
+                                  if (evt.framesRemaining <= 0) {
+                                      this.disturbanceQueue.splice(i, 1);
+                                  }
+                              } else {
+                                  futureKickPending = true;
+                              }
+                              continue;
+                          }
+                          if (evt.type === 'step' && !evt.applied && this.time >= evt.startTime) {
+                              const dx = evt.step / (this.canvas.width / 2);
+                              this.ballV += dx * this.hillKickGain; // one-shot impulse
+                              evt.applied = true;
+                              this.disturbanceQueue.splice(i, 1);
+                          } else if (evt.type === "step" && this.time < evt.startTime) {
+                              futureKickPending = true;
+                          }
+                      }
+                  }
+                  // During pauses (no active kick but more are scheduled), freeze motion
+                  const inPause = (!appliedKickThisFrame && futureKickPending);
+                // Gradient descent with damping toward nearest basin
+                  if (!inPause) {
+                      const force = -this.dUdx(this.ballX);
+                      this.ballV += force * 0.05;
+                      this.ballV *= this.hillDamping;
+                      this.ballX += this.ballV;
+                  } else { this.ballV = 0; }
+                // Clamp within bounds
+                if (this.ballX < -1.2) this.ballX = -1.2;
+                if (this.ballX > 1.2) this.ballX = 1.2;
+
+                // Irreversibility: once in alternative, don't allow crossing back left of crest
+                if (this.currentState === 'alternative' && this.ballX < 0) this.ballX = Math.max(0, this.ballX);
+
+                // Update states
+                const near = (a,b)=>Math.abs(a-b) < 0.03;
+                if (this.ballX > 0) {
+                    // past crest → alternative
+                    if (this.currentState !== 'alternative') { this.updateState('alternative'); }
+                } else if (near(this.ballX, this.leftMinNorm)) {
+                    if (this.currentState !== 'original') this.updateState('original');
+                } else {
+                    if (this.currentState !== 'alternative') this.updateState('disturbed');
+                }
+            }
+
+            drawHillLandscape() {
+                // draw potential curve
+                const ctx = this.ctx;
+                ctx.strokeStyle = '#374151';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                const crestYBase = this.tippingPoint; // align crest with tipping line height
+                const scale = 400; // maps U to pixels (see potentialU comment)
+                for (let px = 0; px <= this.canvas.width; px++) {
+                    const nx = this.canvasToNormX(px);
+                    const U = this.potentialU(nx);
+                    const y = crestYBase - U * scale;
+                    if (px === 0) ctx.moveTo(px, y); else ctx.lineTo(px, y);
+                }
+                ctx.stroke();
+
+                // Draw crest/tipping as vertical dashed line at center
+                ctx.save();
+                ctx.setLineDash([10,5]);
+                ctx.strokeStyle = '#FF5722';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                const midX = this.canvas.width / 2;
+                ctx.moveTo(midX, 0); ctx.lineTo(midX, this.canvas.height); ctx.stroke();
+                ctx.restore();
+                  // Tipping point label at crest
+                  ctx.save();
+                  ctx.fillStyle = '#FF5722';
+                  ctx.font = 'bold 16px Arial';
+                  ctx.textAlign = 'center';
+                  ctx.fillText('Unstable Equilibrium (+1.4˚C)', midX, 24);
+                  ctx.restore();
+
+                // Labels for basins
+                ctx.fillStyle = '#4CAF50'; ctx.font = 'bold 14px Arial';
+                ctx.fillText('Original Stable State', 10, this.canvas.height - 20);
+                ctx.fillStyle = '#F44336';
+                ctx.fillText('Alternative Stable State', this.canvas.width - 260, this.canvas.height - 20);
+            }
+
+            drawBall() {
+                const ctx = this.ctx;
+                const crestYBase = this.tippingPoint;
+                const scale = 400;
+                const U = this.potentialU(this.ballX);
+                const y = crestYBase - U * scale;
+                const x = this.normToCanvasX(this.ballX);
+                ctx.save();
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.font = '22px system-ui, -apple-system, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif';
+                ctx.fillText('🌍', x, y);
+                if (this.currentState === 'alternative' && !this.isTransitioning) {
+                    ctx.font = '18px system-ui, -apple-system, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif';
+                    ctx.fillText('🔥', x + 12, y - 12);
+                }
+                ctx.restore();
+            }
+
+            drawGrid() {
+                this.ctx.strokeStyle = '#e0e0e0';
+                this.ctx.lineWidth = 1;
+                // Vertical lines every 50px
+                for (let x = 50; x < this.canvas.width; x += 50) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                // Horizontal lines every 50px
+                for (let y = 50; y < this.canvas.height; y += 50) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+            }
+
+            drawEquilibriumLines() {
+                // Original (bottom)
+                this.ctx.strokeStyle = '#4CAF50';
+                this.ctx.lineWidth = 2; this.ctx.setLineDash([]);
+                this.ctx.beginPath(); this.ctx.moveTo(0, this.originalEquilibrium); this.ctx.lineTo(this.canvas.width, this.originalEquilibrium); this.ctx.stroke();
+                this.ctx.fillStyle = '#4CAF50'; this.ctx.font = 'bold 14px Arial'; this.ctx.fillText('Original Stable State (±0 ˚C)', 10, this.originalEquilibrium - 10);
+                  this.ctx.fillStyle = '#333'; this.ctx.font = '12px Arial';
+                  this.ctx.fillText('±0 ˚C', 60, this.originalEquilibrium + 15);
+                // Alternative (top)
+                this.ctx.strokeStyle = '#F44336';
+                this.ctx.beginPath(); this.ctx.moveTo(0, this.alternativeEquilibrium); this.ctx.lineTo(this.canvas.width, this.alternativeEquilibrium); this.ctx.stroke();
+                this.ctx.fillStyle = '#F44336'; this.ctx.fillText('Alternative Stable State (+7.5 ˚C)', 10, this.alternativeEquilibrium - 10);
+                  this.ctx.fillStyle = '#333'; this.ctx.font = '12px Arial';
+                  this.ctx.fillText('+7.5 ˚C', 60, this.alternativeEquilibrium + 15);
+            }
+
+            drawTippingPoint() {
+                this.ctx.strokeStyle = '#FF5722'; this.ctx.lineWidth = 3; this.ctx.setLineDash([10,5]);
+                this.ctx.beginPath(); this.ctx.moveTo(0, this.tippingPoint); this.ctx.lineTo(this.canvas.width, this.tippingPoint); this.ctx.stroke();
+                this.ctx.setLineDash([]);
+                this.ctx.fillStyle = '#FF5722'; this.ctx.font = 'bold 16px Arial';
+                this.ctx.fillText('Unstable Equilibrium (+1.4˚C)', this.canvas.width - 220, this.tippingPoint - 10);
+                  this.ctx.fillStyle = '#333'; this.ctx.font = '12px Arial';
+                  this.ctx.fillText('+1.4 ˚C', 60, this.tippingPoint + 15);
+            }
+
+            drawWave() {
+                if (this.dataPoints.length < 2) return;
+                const halfW = this.canvas.width / 2;
+                this.ctx.strokeStyle = '#2196F3'; this.ctx.lineWidth = 3; this.ctx.beginPath();
+                for (let i = 0; i < this.dataPoints.length; i++) {
+                    const x = (i / (this.maxDataPoints - 1)) * halfW;
+                    const y = this.dataPoints[i];
+                    if (i === 0) this.ctx.moveTo(x, y); else this.ctx.lineTo(x, y);
+                }
+                this.ctx.stroke();
+            }
+
+            drawCurrentPoint() {
+                if (this.dataPoints.length === 0) return;
+                const currentY = this.dataPoints[this.dataPoints.length - 1];
+                const halfW = this.canvas.width / 2;
+                const currentX = ((this.dataPoints.length - 1) / (this.maxDataPoints - 1)) * halfW;
+                this.ctx.save();
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                // Base Earth icon
+                this.ctx.font = '22px system-ui, -apple-system, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif';
+                this.ctx.fillText('🌍', currentX, currentY);
+                // If in Alternative Stable State (not transitioning), overlay fire
+                if (this.currentState === 'alternative' && !this.isTransitioning) {
+                    this.ctx.font = '18px system-ui, -apple-system, Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif';
+                    this.ctx.fillText('🔥', currentX + 12, currentY - 12);
+                }
+                this.ctx.restore();
+            }
+
+            drawLabels() {
+                this.ctx.fillStyle = '#333'; this.ctx.font = '12px Arial';
+                this.ctx.fillText('Time →', this.canvas.width/2 - 40, this.canvas.height - 10);
+                }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                if (this.mode === "line") {
+                this.drawGrid();
+                this.drawEquilibriumLines();
+                this.drawTippingPoint();
+                this.drawWave();
+                this.drawCurrentPoint();
+                this.drawLabels();
+                } else {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.drawGrid();
+                this.drawHillLandscape();
+                this.drawBall();
+                }
+            }
+
+            animate() {
+                this.time += 1;
+                if (this.mode === "line") {
+                    const value = this.calculateWaveValue();
+                    this.dataPoints.push(value);
+                    if (this.dataPoints.length > this.maxDataPoints) this.dataPoints.shift();
+                } else {
+                    this.calculateHill();
+                }
+                this.draw();
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        window.addEventListener('load', () => new StableEquilibriumSimulation());
+    </script>
+</body>
+</html>
