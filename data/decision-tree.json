@@ -1,0 +1,166 @@
+{
+  "startNode": "question1",
+  "helpTopics": {
+    "residuals": {
+      "title": "Understanding Residuals of Mean Y-Values",
+      "content": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nWHAT ARE RESIDUALS?\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nWhen students use the mean of their trials (Ȳ) for each fixed X value, the appropriate normality check is on the RESIDUALS of the resulting linear model, not on the raw Y data or the averaged Ȳ data itself.\n\nA residual is the vertical distance between an observed data point and the fitted regression line. It represents the unexplained error of the model.\n\nFormula:\nResidual = Y_observed - Y_predicted\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nWHY CHECK RESIDUALS FOR NORMALITY?\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nThe formal assumption for linear regression is that these residuals are independently and normally distributed with a mean of zero.\n\nIf the residuals are normally distributed, it implies that:\n• The variation around the line of best fit is purely random\n• There are no systematic patterns in the errors\n• The regression model is appropriate for your data\n• You can use the model for statistical inference and predictions\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nVISUAL EXAMPLE:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nScatter Plot with Line of Best Fit:\n\n    Y\n    |\n 20 |           • (actual point)\n    |          /|\n 15 |     •   / | ← Residual (distance from line)\n    |        /  |\n 10 |   •   /   •\n    |      /\n  5 |  •  /\n    | ___/________________\n    0   5   10   15   20  X\n         Line of Best Fit\n\nFor each point:\n• Y_observed = the actual data point you measured\n• Y_predicted = the value on the line of best fit at that X\n• Residual = Y_observed - Y_predicted\n\nThe Shapiro-Wilk test checks whether these residuals (the vertical distances) follow a normal distribution.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nHOW TO USE THE CALCULATOR:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n1. Enter your X and Y data in two columns\n2. The calculator will fit a linear regression line\n3. It will automatically calculate residuals for each point\n4. The Shapiro-Wilk test will check if these residuals are normally distributed\n5. Look for the 'Residual normality' result in the 'Validation' section\n\nIf residuals ARE normally distributed → Use Pearson Correlation\nIf residuals are NOT normally distributed → Use Spearman's Rank Correlation"
+    },
+    "normalDistribution": {
+      "title": "What is Normal Distribution?",
+      "content": "A normal distribution (also called a bell curve) is a pattern where:\n\n• Most values cluster around the middle (mean/average)\n• Values are symmetrically distributed on both sides\n• There are fewer values at the extremes (very high or very low)\n• The data forms a bell-shaped curve when graphed\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nEXAMPLE 1: NORMAL DISTRIBUTION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nExperiment: Comparing plant heights (cm) grown with two different fertilizers\nIndependent Variable (IV): Fertilizer Type\n  • Group A: Organic Fertilizer\n  • Group B: Synthetic Fertilizer\nDependent Variable (DV): Plant height in cm\n\nRAW DATA - Group A (Organic Fertilizer):\nPlant heights measured (cm):\n12, 14, 15, 15, 16, 16, 16, 17, 18, 19\n\nMean = 15.8 cm\n\nBELL CURVE VISUALIZATION:\n       Count of plants\n         at each height\n             ╱╲\n           ╱ 3  ╲       ← 3 plants at 16 cm (most common)\n         ╱  2 2  ╲     ← 2 plants at 15 cm, 2 at 17 cm\n       ╱  1   1 1 1 ╲  ← Fewer plants at the extremes\n     ╱                ╲\n   ╱____________________╲\n  12  14  16  18  20  22\n            ↑\n        Mean≈16\n\nThis IS a normal distribution because:\n✓ Most plants are 15-17 cm (centered around mean)\n✓ Fewer plants at extremes (12 cm and 19 cm)\n✓ Values spread symmetrically on both sides\n✓ Bell-shaped pattern when visualized\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nEXAMPLE 2: SKEWED DISTRIBUTION (NOT NORMAL)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nRAW DATA - Group B (Synthetic Fertilizer):\nPlant heights measured (cm):\n7, 8, 9, 9, 10, 10, 11, 14, 17, 21\n\nMean = 11.6 cm\n\nSKEWED CURVE VISUALIZATION:\n       Count of plants\n         at each height\n    ╱╲\n   ╱2 ╲___            ← Most plants bunched at LOW end\n  ╱  2 1 ╲___         ← 2 at 9cm, 2 at 10cm, then scattered\n ╱  1 1   1  ╲___\n╱            1  ╲___1___1___\n╱_________________________________╲\n7   9   11   13   15   17   19   21\n      ↑\n   Mean≈12\n\nThis is NOT a normal distribution because:\n✗ Most plants bunched at the low end (7-11 cm)\n✗ Data is skewed to the left (negatively skewed)\n✗ NOT symmetrical - long tail extending to the right\n✗ Multiple values spread far from the cluster (14, 17, 21 cm)\n✗ Does NOT form a bell shape - more like a slope\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nHOW TO CHECK YOUR DATA:\n1. List all your measured values for each group\n2. Look at where values cluster - are most in the middle?\n3. Check both sides of the middle - roughly equal spread?\n4. If most values are at one end with a tail, it's skewed\n5. If values cluster in the middle with fewer at extremes, it's likely normal"
+    },
+    "measurementTypes": {
+      "title": "Types of Measurement Scales",
+      "content": "Ordinal Scale:\n• Values of the dependent variable that can be ranked or ordered\n• The difference between ranks is not uniform or meaningful\n• Examples: Survey ratings (1-5 stars), finishing positions in a race (1st, 2nd, 3rd), education level (high school, bachelor's, master's)\n\nInterval or Ratio Scale:\n• Numerical values of the dependent variable with equal intervals between measurements\n• Mathematical operations (addition, subtraction, multiplication, division) are meaningful\n• The difference between values is consistent and measurable\n• Examples: Temperature, height, weight, time, age, distance, test scores, income, speed"
+    },
+    "chiSquaredAssociation": {
+      "title": "Understanding Chi-Squared Test of Association",
+      "content": "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nWHAT IS A CHI-SQUARED TEST OF ASSOCIATION?\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nThis test determines whether two categorical variables are associated (related) or independent (not related) in a single sample.\n\nKey characteristics:\n• ONE sample (e.g., 200 quadrats, 100 students, 500 patients)\n• TWO categorical variables measured for each individual/unit\n• Data organized in a contingency table (rows × columns)\n• Asks: \"Do these two variables tend to occur together?\"\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nEXAMPLE: Testing Association Between Two Moorland Plants\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nResearch Question:\nDo bell heather and ling (common heather) tend to be found together on moorland?\n\nWhy This Matters:\nSpecies that occur together may share similar microhabitat requirements (soil moisture, pH, sunlight). This gives ecologists useful information about habitat preferences.\n\nStudy Design:\n• Single sample: 200 quadrats randomly placed on moorland\n• Variable 1: Bell heather (present or absent)\n• Variable 2: Ling (present or absent)\n• Each quadrat classified by BOTH variables\n\nNull Hypothesis:\nThere is no significant association between bell heather and ling - their distributions are independent.\n\nOBSERVED DATA:\n┌──────────────┬─────────────┬─────────────┬───────┐\n│              │Bell heather │Bell heather │ Total │\n│              │  present    │   absent    │       │\n├──────────────┼─────────────┼─────────────┼───────┤\n│Ling present  │     89      │     45      │  134  │\n│Ling absent   │     31      │     35      │   66  │\n├──────────────┼─────────────┼─────────────┼───────┤\n│Total         │    120      │     80      │  200  │\n└──────────────┴─────────────┴─────────────┴───────┘\n\nNotice:\n• When ling is present, bell heather is also present 89 times\n  (that's 89/134 = 66% of the time)\n• When ling is absent, bell heather is present only 31 times\n  (that's 31/66 = 47% of the time)\n• This suggests they MAY be associated!\n\nChi-Squared Test Result:\nThe test calculates whether this pattern is statistically significant or could have occurred by chance.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOTHER EXAMPLES OF CHI-SQUARED INVESTIGATIONS:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n1. Medical Study:\n   Sample: 500 patients\n   Variable 1: Smoker (yes/no)\n   Variable 2: Lung disease (yes/no)\n   Question: Is smoking associated with lung disease?\n\n2. Social Science:\n   Sample: 300 voters\n   Variable 1: Gender (male/female/other)\n   Variable 2: Voting preference (Party A/B/C)\n   Question: Is gender associated with voting preference?\n\n3. Ecology:\n   Sample: 150 trees\n   Variable 1: Fungal infection (present/absent)\n   Variable 2: Tree species (oak/maple/pine)\n   Question: Are certain species more prone to infection?\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nKEY POINT:\nYou have ONE sample, and you classify each individual/unit according to TWO different categorical variables to see if they're related."
+    },
+    "chiSquaredExpected": {
+      "title": "Chi-Squared: Expected Values of at Least 5",
+      "content": "When using a Chi-Squared Test, each category must have an EXPECTED frequency of at least 5 for the test to be reliable.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nWHAT ARE EXPECTED VALUES?\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nExpected values are NOT your actual counts (observed values).\nExpected values are what you would PREDICT if there were no relationship between your variables.\n\nFormula: Expected = (Row Total × Column Total) / Grand Total\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nEXAMPLE: Relationship between study method and exam result\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nObserved Data (what you actually counted):\n┌─────────────────┬──────┬──────┬───────┐\n│  Study Method   │ Pass │ Fail │ Total │\n├─────────────────┼──────┼──────┼───────┤\n│ Group Study     │  25  │   5  │   30  │\n│ Individual Study│  15  │  15  │   30  │\n├─────────────────┼──────┼──────┼───────┤\n│ Total           │  40  │  20  │   60  │\n└─────────────────┴──────┴──────┴───────┘\n\nExpected Values (calculated for each cell):\n┌─────────────────┬──────┬──────┐\n│  Study Method   │ Pass │ Fail │\n├─────────────────┼──────┼──────┤\n│ Group Study     │  20  │  10  │\n│ Individual Study│  20  │  10  │\n└─────────────────┴──────┴──────┘\n\nCalculation example for \"Group Study, Pass\":\nExpected = (30 × 40) / 60 = 20\n\nAll expected values are ≥ 5 ✓\nChi-Squared Test is APPROPRIATE ✓\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nWHY THE \"AT LEAST 5\" RULE?\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nThe Chi-Squared test uses an approximation that only works well when expected frequencies are large enough. If expected values are too small (< 5), the test becomes unreliable and may give incorrect results.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nWHAT IF MY EXPECTED VALUES ARE LESS THAN 5?\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nOptions:\n1. Collect more data to increase sample size\n2. Combine categories if it makes logical sense\n3. Use Fisher's Exact Test instead (for 2×2 tables)\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nHOW TO CHECK:\n1. Set up your data in a table with categories\n2. Calculate expected values for each cell using the formula\n3. Check that ALL expected values are ≥ 5\n4. If any are < 5, Chi-Squared may not be reliable"
+    }
+  },
+  "nodes": {
+    "question1": {
+      "question": "Is the raw data from a single sample being classified according to two different variables (e.g., by both 'gender' and 'voting preference') to determine if there is a significant association or relationship between those two variables?",
+      "helpNeeded": "chiSquaredAssociation",
+      "answers": [
+        {
+          "answer": "Yes",
+          "recommendation": "Chi Squared Test for Independence",
+          "conditions": "• The expected values within each group must be at least 5",
+          "helpNeeded": "chiSquaredExpected",
+          "calculatorUrl": "https://www.socscistatistics.com/tests/chisquare2/default2.aspx",
+          "calculatorName": "Chi-Squared Test Calculator"
+        },
+        {
+          "answer": "No",
+          "nextNode": "question2"
+        }
+      ]
+    },
+    "question2": {
+      "question": "Is your experiment designed to measure differences between groups (i.e. in a bar chart) or correlation between variables (i.e. in a scatter plot)?",
+      "answers": [
+        {
+          "answer": "Differences",
+          "nextNode": "question3"
+        },
+        {
+          "answer": "Correlation",
+          "nextNode": "question4"
+        }
+      ]
+    },
+    "question3": {
+      "question": "How many groups are you comparing (i.e. values of your Independent Variable)?",
+      "context": "If you are in this pathway, often you have used a bar chart or box & whisker plot to show the differences between groups of your IV and the average DV measurements",
+      "answers": [
+        {
+          "answer": "Three or More Groups",
+          "recommendation": "One Way ANOVA for Independent Measures",
+          "conditions": "• The DV measurement type must be interval or ratio\n• There must be a normal distribution within each group of data\n• IMPORTANT: ANOVA is most appropriate for investigations that aim to COMPARE MEAN RESULTS of different treatments (typically shown in a bar chart or box plot). If your investigation aims to show the RELATIONSHIP between variables using a trend line on a scatter plot, correlation tests (Pearson or Spearman's Rank) are more appropriate than ANOVA.",
+          "helpNeeded": "measurementTypes",
+          "additionalHelpTopics": ["normalDistribution"],
+          "calculatorUrl": "https://www.socscistatistics.com/tests/anova/default2.aspx",
+          "calculatorName": "ANOVA Calculator"
+        },
+        {
+          "answer": "Exactly Two Groups",
+          "nextNode": "question3a"
+        }
+      ]
+    },
+    "question3a": {
+      "question": "Which type of measurement best represents your raw dependent variable data?",
+      "helpNeeded": "measurementTypes",
+      "answers": [
+        {
+          "answer": "Ordinal",
+          "recommendation": "Mann-Whitney U Test",
+          "calculatorUrl": "https://www.socscistatistics.com/tests/mannwhitney/default.aspx",
+          "calculatorName": "Mann-Whitney U Test Calculator"
+        },
+        {
+          "answer": "Interval or Ratio",
+          "nextNode": "question3b"
+        }
+      ]
+    },
+    "question3b": {
+      "question": "Looking at the set of DV data collected for each group, do you see a normal distribution? Meaning that for each group there are some small values, some large values, but most values are centered around the middle.",
+      "helpNeeded": "normalDistribution",
+      "answers": [
+        {
+          "answer": "Yes, a normal distribution is evident",
+          "recommendation": "t-test for Independent Samples",
+          "conditions": "At least 15 pieces of data are included within each group",
+          "calculatorUrl": "https://www.socscistatistics.com/tests/studentttest/default.aspx",
+          "calculatorName": "t-test for Independent Samples Calculator"
+        },
+        {
+          "answer": "No, a normal distribution is not able to be determined or the data appears to be skewed to one end",
+          "recommendation": "Mann-Whitney U Test",
+          "calculatorUrl": "https://www.socscistatistics.com/tests/mannwhitney/default.aspx",
+          "calculatorName": "Mann-Whitney U Test Calculator"
+        }
+      ]
+    },
+    "question4": {
+      "question": "Are you aiming to show how much of the variation in the data can be explained by your chosen line of best fit model?",
+      "context": "If you are in this pathway, typically you have used a scatter plot to show the relationship between your IV and DV",
+      "answers": [
+        {
+          "answer": "Yes",
+          "recommendation": "R-squared Coefficient of Determination (R²)",
+          "calculatorUrl": "https://www.standarddeviationcalculator.io/coefficient-of-determination-calculator",
+          "calculatorName": "R-Squared Calculator"
+        },
+        {
+          "answer": "No, the aim is to show the strength of the relationship shown by the line of best fit",
+          "nextNode": "question4a"
+        }
+      ]
+    },
+    "question4a": {
+      "question": "Is the correlation you are aiming to show linear or non-linear?",
+      "answers": [
+        {
+          "answer": "Linear",
+          "nextNode": "question4b"
+        },
+        {
+          "answer": "Non-Linear",
+          "recommendation": "Spearman's Rank Correlation Coefficient (ρ)",
+          "conditions": "At least 6 values of the IV are required",
+          "calculatorUrl": "https://www.socscistatistics.com/tests/spearman/default2.aspx",
+          "calculatorName": "Spearman Rank Correlation Calculator"
+        }
+      ]
+    },
+    "question4b": {
+      "question": "Does the result of the Shapiro-Wilk test show that the residuals of the mean Y-values are normally distributed?",
+      "helpNeeded": "residuals",
+      "context": "It must be determined if the residuals of the mean Y-values of your results show a normal distribution or not. The Shapiro-Wilk test on residuals is a reliable measure for this. On the calculator below, keep the default settings and select the option 'Enter Raw Data from Excel'. In a two-column format, paste in your X and Y values along with their headers, with Y-values in the right-hand column. Click the 'Calculate' button. Scroll down on the page to the 'Validation' section and look for the 'Residual normality' result.",
+      "shapiroWilkUrl": "https://www.statskingdom.com/410multi_linear_regression.html",
+      "answers": [
+        {
+          "answer": "Yes, the residuals are normally distributed",
+          "recommendation": "Pearson Correlation Coefficient (r)",
+          "conditions": "Condition for a highly accurate result: a total sample size of at least 25 values should be present",
+          "calculatorUrl": "https://www.socscistatistics.com/tests/pearson/default2.aspx",
+          "calculatorName": "Pearson Correlation Coefficient Calculator"
+        },
+        {
+          "answer": "No, the residuals are NOT normally distributed",
+          "recommendation": "Spearman's Rank Correlation Coefficient (ρ)",
+          "conditions": "At least 6 values of the IV are required",
+          "calculatorUrl": "https://www.socscistatistics.com/tests/spearman/default2.aspx",
+          "calculatorName": "Spearman Rank Correlation Calculator"
+        }
+      ]
+    }
+  }
+}
