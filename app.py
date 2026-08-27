@@ -5,7 +5,7 @@ from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ess_secret_key'
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 # --- GAME STATE ---
 INITIAL_GAME_STATE = {
@@ -433,7 +433,7 @@ HTML_TEMPLATE = r"""
             <h1 style="color: #b71c1c; margin-bottom: 5px;">CLIMATE TIPPING POINT: END GAME</h1>
             <h2 id="endgame-winner-banner" style="color: #2e7d32; background: #e8f5e9; padding: 12px; border-radius: 6px; margin: 10px 0;"></h2>
             <p style="font-size: 1em; color: #444; margin-bottom: 8px;">Climate Disturbance has halted the market economy. No new buying is possible, so each community must use what it already has in inventory to meet the full end-game quotas.</p>
-            <p style="font-size: 0.95em; color: #666; margin-bottom: 15px;"><strong>Resource Gap</strong> shows missing units of water, food, or energy, and <strong>Safety Loss</strong> shows the CRS cost of toxic water consumed.</p>
+            <p style="font-size: 0.95em; color: #666; margin-bottom: 15px;"><strong>Resource Gap</strong> shows missing units of water, food, or energy, and <strong>Safety Loss</strong> shows the RSS cost of toxic water consumed.</p>
             <div id="endgame-table-container"></div>
             <button class="modal-btn" style="background: #b71c1c; width: 100%; margin-top: 20px;" onclick="closeEndgameModal()">Close Final Audit</button>
         </div>
@@ -529,7 +529,7 @@ HTML_TEMPLATE = r"""
             <li><strong>Inter-Team Loans:</strong> Negotiate loans between teams, including repayment amounts & timeframe.</li>
         </ul>
         
-        <h2 style="margin-top: 25px; color: #1565c0;">🏆 How to Earn Community Resilience (CRS) Points:</h2>
+        <h2 style="margin-top: 25px; color: #1565c0;">🏆 How to Earn Resource Security (RSS) Points:</h2>
         <ul style="background: #f8f9fa; padding: 15px 35px; border-radius: 8px; border-left: 5px solid #2196F3; font-size: 1.05em;">
             <li style="margin-bottom: 8px;"><strong>Availability:</strong> <b>+10 points</b> for meeting each resource target. <em>Penalty: -10 pts per missing unit!</em></li>
             <li style="margin-bottom: 8px;"><strong>Adaptation:</strong> <b>+20 points</b> for each successful ESS action (minigame), plus compounding streak bonuses.</li>
@@ -1114,7 +1114,7 @@ HTML_TEMPLATE = r"""
                 if (tData.action_streak >= 2 && !streakAlertsShown[team]) {
                     streakAlertsShown[team] = true;
                     setTimeout(() => {
-                        alert(`🔥 STREAK BONUS UNLOCKED for ${team}! 🔥\n\nYour community is building momentum! Every consecutive ESS Action you complete now adds compounding bonus points to your CRS.`);
+                        alert(`🔥 STREAK BONUS UNLOCKED for ${team}! 🔥\n\nYour community is building momentum! Every consecutive ESS Action you complete now adds compounding bonus points to your RSS.`);
                     }, 500);
                 }
                 
@@ -1140,7 +1140,7 @@ HTML_TEMPLATE = r"""
                 let panelHtml = `
                     <h2>${team === 'High-Income' ? '🏙️' : (team === 'Middle-Income' ? '🏡' : '🌾')} ${team}</h2>
                     <div style="text-align: center;">
-                        <div class="score-badge">⭐ CRS: <span>${tData.score}</span></div><br>
+                        <div class="score-badge">⭐ RSS: <span>${tData.score}</span></div><br>
                         <div class="streak-badge">🔥 Action Streak: <span>${tData.action_streak}x</span></div>
                     </div>
                     <h3 style="color: green; margin-top: 0;">Budget: $<span>${tData.budget}</span></h3>
@@ -1230,12 +1230,12 @@ HTML_TEMPLATE = r"""
                 repayContainer.innerHTML = "";
             }
 
-            let scoresHtml = "<h3>Round Scores & CRS Progression:</h3><ul>";
+            let scoresHtml = "<h3>Round Scores & RSS Progression:</h3><ul>";
             for (let team in summary.teams) {
                 let delta = summary.teams[team].delta;
                 let color = delta >= 0 ? "green" : "red";
                 let sign = delta >= 0 ? "+" : "";
-                scoresHtml += `<li><strong>${team}:</strong> Ended Round ${summary.round - 1} with ${summary.teams[team].score} CRS (<span style="color:${color}">${sign}${delta} pts</span>)</li>`;
+                scoresHtml += `<li><strong>${team}:</strong> Ended Round ${summary.round - 1} with ${summary.teams[team].score} RSS (<span style="color:${color}">${sign}${delta} pts</span>)</li>`;
             }
             scoresHtml += "</ul>";
             
@@ -1253,7 +1253,7 @@ HTML_TEMPLATE = r"""
                         <th style="padding:8px; text-align:center;">Secured Progress</th>
                         <th style="padding:8px; text-align:center;">Resource Gap</th>
                         <th style="padding:8px; text-align:center;">Safety Loss</th>
-                        <th style="padding:8px; text-align:center;">Final CRS</th>
+                        <th style="padding:8px; text-align:center;">Final RSS</th>
                         <th style="padding:8px; text-align:left;">Survival Status</th>
                     </tr>
                 </thead>
@@ -1267,7 +1267,7 @@ HTML_TEMPLATE = r"""
                     <td style="padding:8px; text-align:center; color:#1565c0; font-weight:bold;">Secured ${result.secured_units} of ${result.required_units} required</td>
                     <td style="padding:8px; text-align:center; color:#c62828;">-${result.unmet_units * 20} pts (${result.unmet_units} units)</td>
                     <td style="padding:8px; text-align:center; color:#c62828;">-${result.toxic_count * 15} pts (${result.toxic_count} units)</td>
-                    <td style="padding:8px; text-align:center; font-weight:bold; font-size:1.1em;">${result.final_crs}</td>
+                    <td style="padding:8px; text-align:center; font-weight:bold; font-size:1.1em;">${result.final_rss}</td>
                     <td style="padding:8px; font-weight:bold; color:${statusColor};">${result.status}</td>
                 </tr>`;
             }
@@ -1279,7 +1279,7 @@ HTML_TEMPLATE = r"""
 
         function buy(team, item) { 
             if (item === 'toxic_water') {
-                let msg = `⚠️ WARNING: TOXIC WATER ⚠️\n\nPurchasing Toxic Water will count towards your Water Quota / Bank, BUT it will inflict a massive -15 CRS penalty per unit consumed at the end of every round!\n\nAre you sure you want to proceed?`;
+                let msg = `⚠️ WARNING: TOXIC WATER ⚠️\n\nPurchasing Toxic Water will count towards your Water Quota / Bank, BUT it will inflict a massive -15 RSS penalty per unit consumed at the end of every round!\n\nAre you sure you want to proceed?`;
                 if (!confirm(msg)) {
                     return; 
                 }
@@ -1304,7 +1304,7 @@ HTML_TEMPLATE = r"""
             
             if (totalMissing > 0) {
                 let penalty = totalMissing * 10;
-                let message = `⚠️ INSUFFICIENT AVAILABILITY ⚠️\n\nYour community has not secured enough resources to meet target quotas.\n\nPenalty: -${penalty} CRS points.\n\nLock in this order anyway?`;
+                let message = `⚠️ INSUFFICIENT AVAILABILITY ⚠️\n\nYour community has not secured enough resources to meet target quotas.\n\nPenalty: -${penalty} RSS points.\n\nLock in this order anyway?`;
                 
                 if (confirm(message)) {
                     socket.emit('submit_order', {team: team});
@@ -1507,7 +1507,7 @@ def handle_advance(data):
         max_score = -999999
 
         for team_key, team in game_state["teams"].items():
-            final_crs = team['score']
+            final_rss = team['score']
             endgame_base_target = game_state['round'] * 4
             required_units = 0
             secured_units = 0
@@ -1517,19 +1517,19 @@ def handle_advance(data):
                 required_units += target
                 secured_units += min(team['inventory'][item], target)
 
-            if final_crs > max_score:
-                max_score = final_crs
+            if final_rss > max_score:
+                max_score = final_rss
                 winner = team_key
 
-            if final_crs >= 150:
+            if final_rss >= 150:
                 status = "Ecosystem Winner (Thriving)"
-            elif final_crs >= 0:
+            elif final_rss >= 0:
                 status = "Vulnerable / Chronic Failure"
             else:
                 status = "Total System Collapse"
 
             endgame_results[team_key] = {
-                "final_crs": final_crs,
+                "final_rss": final_rss,
                 "unmet_units": team.get("unmet_units", 0),
                 "toxic_count": team['inventory']['toxic_water'],
                 "required_units": required_units,
