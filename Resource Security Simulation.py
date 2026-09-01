@@ -907,12 +907,14 @@ HTML_TEMPLATE = r"""
         let minigameTimeLeft = 20;
         let minigameRound = null;
         let currentTargetWord = "";
+        let remainingVocab = [...essVocab];
         let activeMinigameTeam = "";
         let activeActionType = "";
         let activeResource = "";
         let activeStrategyTitle = "";
 
         function startDashboard() {
+            remainingVocab = [...essVocab];
             socket.emit('start_game');
             document.getElementById('intro-screen').style.display = 'none';
             document.getElementById('game-dashboard').style.display = 'block';
@@ -986,13 +988,17 @@ HTML_TEMPLATE = r"""
                 alert("No more minigames are available this round.");
                 return;
             }
+            if (remainingVocab.length === 0) {
+                remainingVocab = [...essVocab];
+            }
 
             activeMinigameTeam = team;
             activeActionType = actionType;
             activeResource = resource;
             activeStrategyTitle = titleText;
 
-            currentTargetWord = essVocab[Math.floor(Math.random() * essVocab.length)];
+            const wordIndex = Math.floor(Math.random() * remainingVocab.length);
+            currentTargetWord = remainingVocab.splice(wordIndex, 1)[0];
             let scrambled = shuffleWord(currentTargetWord);
 
             let related = essRelatedWords[currentTargetWord] || ["environmental systems", "syllabus term", "ecology"];
