@@ -64,6 +64,9 @@ def calculate_scores():
         for item in ["water", "food", "energy"]:
             target = max(0, base_target - team["demand_reduction"][item])
             count = team["inventory"][item]
+            team.setdefault("quota_target", {})[item] = target
+            team.setdefault("quota_progress", {})[item] = min(target, count)
+            team.setdefault("resource_bank", {})[item] = max(0, count - target)
             if count >= target:
                 raw_score += 10 
             else:
@@ -1122,18 +1125,12 @@ HTML_TEMPLATE = r"""
                     streakAlertsShown[team] = false;
                 }
 
-                let baseTarget = state.round * 2;
-                
                 let splits = {};
                 ['water', 'food', 'energy'].forEach(i => {
-                    let teamRed = tData.demand_reduction[i];
-                    let currentTarget = Math.max(0, baseTarget - teamRed);
-                    let totalInv = tData.inventory[i];
-                    
                     splits[i] = {
-                        need: Math.min(currentTarget, totalInv),
-                        quota: currentTarget,
-                        bank: Math.max(0, totalInv - currentTarget)
+                        need: tData.quota_progress[i],
+                        quota: tData.quota_target[i],
+                        bank: tData.resource_bank[i]
                     };
                 });
 
@@ -1284,7 +1281,11 @@ HTML_TEMPLATE = r"""
                     return; 
                 }
             }
-            socket.emit('buy_item', {team: team, item: item}); 
+            socket.emit('buy_item', {team: team, item: item}, function(result) {
+                if (!result.ok) {
+                    alert(result.message);
+                }
+            });
         }
 
         function undoPurchase(team) { socket.emit('undo_purchase', {team: team}); }
@@ -1401,6 +1402,9 @@ def handle_buy(data):
         
         calculate_scores()
         emit('update_state', game_state, broadcast=True)
+        return {"ok": True}
+
+    return {"ok": False, "message": "This purchase is no longer available. Check the team's budget, market stock, and turn status."}
 
 @socketio.on('undo_purchase')
 def handle_undo(data):
@@ -1472,6 +1476,9 @@ def handle_execute_action(data):
         team['action_streak'] += 1
         calculate_scores()
         emit('update_state', game_state, broadcast=True)
+        return {"ok": True}
+
+    return {"ok": False, "message": "This team's turn has already ended."}
 
 @socketio.on('minigame_failed')
 def handle_minigame_failed(data):
