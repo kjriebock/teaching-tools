@@ -903,7 +903,9 @@ HTML_TEMPLATE = r"""
         };
 
         let minigameTimerInterval = null;
+        let minigameTimeLimit = 20;
         let minigameTimeLeft = 20;
+        let minigameRound = null;
         let currentTargetWord = "";
         let activeMinigameTeam = "";
         let activeActionType = "";
@@ -980,6 +982,11 @@ HTML_TEMPLATE = r"""
         }
 
         function openMinigame(team, actionType, resource, titleText) {
+            if (minigameTimeLimit <= 0) {
+                alert("No more minigames are available this round.");
+                return;
+            }
+
             activeMinigameTeam = team;
             activeActionType = actionType;
             activeResource = resource;
@@ -1013,7 +1020,7 @@ HTML_TEMPLATE = r"""
             document.getElementById('minigame-modal').style.display = 'block';
             document.getElementById('minigame-input').focus();
             
-            minigameTimeLeft = 20;
+            minigameTimeLeft = minigameTimeLimit;
             document.getElementById('minigame-timer').innerText = `Time Left: ${minigameTimeLeft}s`;
 
             clearInterval(minigameTimerInterval);
@@ -1032,6 +1039,7 @@ HTML_TEMPLATE = r"""
         function submitMinigame() {
             let guess = document.getElementById('minigame-input').value.toUpperCase().trim();
             if (guess === currentTargetWord) {
+                minigameTimeLimit = Math.max(0, minigameTimeLimit - 2);
                 socket.emit('execute_action', {
                     team: activeMinigameTeam, 
                     action_type: activeActionType, 
@@ -1085,6 +1093,11 @@ HTML_TEMPLATE = r"""
 
         // --- DASHBOARD RENDER ---
         socket.on('update_state', function(state) {
+            if (state.round !== minigameRound) {
+                minigameRound = state.round;
+                minigameTimeLimit = 20;
+            }
+
             currentState = state; 
             document.getElementById('round').innerText = state.round;
             
