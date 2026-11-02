@@ -409,14 +409,21 @@ function checkBlueprint(){
   const th=DATA.thresholds[currentScenario];
   // Student view: normalize to 100 for this scenario, so reference = 100.
   // Backend final / reference final * 100, capped at 100, rounded. Threshold normalized the same way.
-  const studentScore=Math.min(100, Math.round(final/th.ref_final*100));
+  const rawScore=Math.min(100, Math.round(final/th.ref_final*100));
   const studentThreshold=Math.round(th.threshold/th.ref_final*100);
-  const pass = studentScore>=studentThreshold && gaps<0.01 && lowest>=th.lowest; // strict: no partial driver allowed for 'highly optimized'
+  const coherent = gaps<0.01 && lowest>=th.lowest; // strict: no partial driver allowed for 'highly optimized'
+  const pass = rawScore>=studentThreshold && coherent;
+  // Displayed score must agree with the pass verdict: a design that fails on coherence
+  // (a gap, or a pillar below the minimum) can never display at or above the threshold,
+  // however high its bars. Compress such scores into 0..threshold-1, preserving rank
+  // order. Coherent designs are untouched.
+  const capped = rawScore>=studentThreshold && !coherent;
+  const studentScore = capped ? Math.round(rawScore*(studentThreshold-1)/100) : rawScore;
   el('feedback').style.display='block';
   el('pBar').style.width=P+'%'; el('pVal').textContent=Math.round(P)+' / 100';
   el('eBar').style.width=E+'%'; el('eVal').textContent=Math.round(E)+' / 100';
   el('vBar').style.width=V+'%'; el('vVal').textContent=Math.round(V)+' / 100';
-  el('finalLine').innerHTML='<strong>Your blueprint score: '+studentScore+' / 100</strong> — threshold for highly optimized in this scenario: '+studentThreshold+' / 100. '+(pass ? '<strong>Highly optimized for this scenario context.</strong>' : '<strong>Not yet highly optimized.</strong>');
+  el('finalLine').innerHTML='<strong>Your blueprint score: '+studentScore+' / 100</strong> — threshold for highly optimized in this scenario: '+studentThreshold+' / 100. '+(pass ? '<strong>Highly optimized for this scenario context.</strong>' : '<strong>Not yet highly optimized.</strong>'+(capped ? ' The score stays below the threshold until the coherence gap is resolved.' : ''));
   // Single-oversight feedback (below threshold only): one sentence about the
   // greatest oversight, never naming the strategy or domain that would replace it.
   // Rule: candidate size per domain = 1 - driver score, plus 0.5 for Domain 1 if the
